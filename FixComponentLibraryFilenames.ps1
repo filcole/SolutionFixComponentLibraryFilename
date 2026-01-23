@@ -1,7 +1,8 @@
-# TEMPORARY: There's a bug that causes default command libraries to export with inconsistent filenames.
-# We will rename the files using the appId in the canvas app metadata.
+# TEMPORARY: There's a bug that causes command libraries or custom pages with long names
+# to export with inconsistent filenames. To workaround we rename the files using the 
+# appId in the canvas app metadata.
 #
-# Find any the metadata file of any canvas apps of type component library
+# Find any the metadata file of any canvas apps of type component library or custom page
 # For each canvas app CanvasApps/*meta.xml found
 #   Extract the AppId from the metadata filename
 #   Rename the BackgroundImage and DocumentUri files to use found AppId
@@ -67,14 +68,15 @@ Function RenameComponentLibraryFile([string]$appXml, [string]$solutionfolder, [s
 }
 
 Function FixComponentLibraryFilenames() {
-    # TEMPORARY: There's a bug that causes default command libraries to export with inconsistent filenames.
+    # TEMPORARY: There's a bug that causes default command libraries or custom pages 
+    # to export with inconsistent filenames.
     # We will save the filename with a hex version of the time in the AppVersion, so that it
     # only changes when the app version changes.
 
     # Find any the metadata file of any canvas apps of type component library
     # For each canvas app CanvasApps/*meta.xml found
     #   Extract the AppId from the metadata filename
-    #   Rename the BackgroundImage and DocumentUri files to use found AppId
+    #   Rename the BackgroundImage, DocumentUri and AdditionalUri files to use found AppId
     #   Update the meta.xml to point to these moved files
 
     $canvasFolder = Join-Path $solutionfolder "CanvasApps"
@@ -84,15 +86,16 @@ Function FixComponentLibraryFilenames() {
         return
     }
     
-    Write-Host "Scanning for Component Libraries with unstable filenames" 
+    Write-Host "Scanning for Component Libraries or Custom Pages with unstable filenames" 
 
     $reAppId = '^.*_([0-9a-z]{5})\.meta\.xml$'
 
     # CanvasAppType 1 = App Component Libraries, see
+    # CanvasAppType 2 = Custom Pages, see
     # https://learn.microsoft.com/en-us/power-apps/developer/data-platform/webapi/reference/canvasapp
     # only these types of canvas app exhibit the problem
     $canvasApps = Get-ChildItem -Path "$canvasFolder" -Recurse -File -Filter *.meta.xml | 
-    Select-String '<CanvasAppType>1</CanvasAppType>' -List | 
+    Select-String '<CanvasAppType>(1|2)</CanvasAppType>' -List | 
     Select-Object Path, Filename
     $canvasApps | ForEach-Object {
         $metadata = $_
