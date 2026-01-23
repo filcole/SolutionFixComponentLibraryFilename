@@ -41,7 +41,7 @@ Function RenameComponentLibraryFile([string]$appXml, [string]$solutionfolder, [s
     $re = "<$tag>" + $regex + "</$tag>"
 
     if (!($appXml -match $re)) {
-        Write-Host "Warning: Could not find matching regex: $re"
+        Write-Host "  Warning: Could not find matching regex: $re"
         return $appXml
     }
 
@@ -53,7 +53,7 @@ Function RenameComponentLibraryFile([string]$appXml, [string]$solutionfolder, [s
     $fileName = $matches[1]  + $matches[2] + $matches[3]
     $newFileName = $matches[1] + $appVersionHex + $matches[3]
 
-    Write-Host "Renaming $fileName to $newFileName"
+    Write-Host "  Renaming $fileName to $newFileName"
     
     $origFullPath = Join-Path $solutionfolder $fileName
     $newFullPath = Join-Path $solutionfolder $newFileName
@@ -103,7 +103,7 @@ Function FixComponentLibraryFilenames() {
         $origAppXml = $appXml
 
         if (!($metadata.FileName -match $reAppId)) {
-            Write-Host "Warning: Could not find AppId in filename: $($metadata.FileName)"
+            Write-Host "  Warning: Could not find AppId in filename: $($metadata.FileName)"
             return
         }
     
@@ -117,11 +117,15 @@ Function FixComponentLibraryFilenames() {
             $appXml $solutionfolder `
             "DocumentUri" "(/CanvasApps/\S+)([0-9a-z]{5})(_DocumentUri\.msapp)" $appVersionHex
 
+        $appXml = RenameComponentLibraryFile `
+            $appXml $solutionfolder `
+            "AdditionalUri" "(/CanvasApps/\S+)([0-9a-z]{5})(_AdditionalUris0_identity\.json)" $appVersionHex            
+
         if ($origAppXml -eq $appXml) {
             return
         }
 
-        Write-Host "Saving updated metadata in $($metadata.FileName)"
+        Write-Host "  Saving updated metadata in $($metadata.FileName)"
 
         # Save the updated component library metadata
         $appXml | Set-Content -NoNewLine -Path $metadata.Path
