@@ -59,7 +59,7 @@ Function RenameComponentLibraryFile([string]$appXml, [string]$solutionfolder, [s
     $origFullPath = Join-Path $solutionfolder $fileName
     $newFullPath = Join-Path $solutionfolder $newFileName
     
-    Move-Item $origFullPath $newFullPath
+    Move-Item $origFullPath $newFullPath -Force
 
     $appXml = $appXml -replace "<$tag>$fileName</$tag>", "<$tag>$newFileName</$tag>"
 
